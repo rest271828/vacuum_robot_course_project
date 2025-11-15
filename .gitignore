@@ -2,7 +2,6 @@
 build/
 install/
 log/
-.devel/
 
 # Python编译文件
 __pycache__/
@@ -10,20 +9,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-
-# C++编译文件
-*.o
-*.a
-*.la
-*.lo
-*.slo
-*.obj
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
 
 # IDE和编辑器文件
 .vscode/
@@ -33,44 +18,53 @@ __pycache__/
 *~
 .DS_Store
 
-# 日志文件
-*.log
-*.log.*
-
-# 临时文件
-*.tmp
-*.temp
-*.bak
-*.backup
-*~
-
-# 个人配置和密钥文件（保留模板）
-*.key
-*.pem
-!*.example
-
-# 系统文件
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Conda环境文件
-.conda/
-
-# 测试覆盖率
-.coverage
-htmlcov/
-
-# 编译中间文件
-cmake-build-*/
+# CMake生成文件
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 Makefile
+*.cmake
+!**/CMakeLists.txt
 
-# ROS2特定文件
+# 临时文件
+*.tmp
+*.bak
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# 测试覆盖率
+.coverage
+htmlcov/
+.pytest_cache/
+
+# 环境变量文件
+.env
+.env.local
+
+# 系统文件
+Thumbs.db
+.DS_Store
+
+# Gazebo缓存
+~/.gazebo/
+
+# ROS日志
 .ros/
 
-# 仿真器缓存
-*.gazebo
+# 备份文件
+*.orig
+*~
+
+# 二进制文件
+*.o
+*.a
+*.lib
+*.exe
+*.out
+*.app
+
+# 编译产物（保留源代码）
+*.class
 
