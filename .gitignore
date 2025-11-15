@@ -1,0 +1,76 @@
+# ROS2工作空间编译文件
+build/
+install/
+log/
+.devel/
+
+# Python编译文件
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# C++编译文件
+*.o
+*.a
+*.la
+*.lo
+*.slo
+*.obj
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# IDE和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 日志文件
+*.log
+*.log.*
+
+# 临时文件
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
+
+# 个人配置和密钥文件（保留模板）
+*.key
+*.pem
+!*.example
+
+# 系统文件
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Conda环境文件
+.conda/
+
+# 测试覆盖率
+.coverage
+htmlcov/
+
+# 编译中间文件
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# ROS2特定文件
+.ros/
+
+# 仿真器缓存
+*.gazebo
+
