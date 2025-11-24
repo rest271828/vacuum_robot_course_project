@@ -57,7 +57,8 @@ def generate_launch_description():
     # 如果你想要同时启动Nav2，需要提供一个空地图或使用不同的launch文件
     
     # Slam Toolbox节点
-    slam_toolbox = LifecycleNode(
+    # 注意：sync_slam_toolbox_node 是普通节点，不是生命周期节点，所以不需要lifecycle_manager
+    slam_toolbox = Node(
         package='slam_toolbox',
         executable='sync_slam_toolbox_node',
         name='slam_toolbox',
@@ -66,21 +67,18 @@ def generate_launch_description():
         parameters=[
             slam_params_file,
             {'use_sim_time': use_sim_time}
+        ],
+        remappings=[
+            ('/scan', '/scan'),
+            ('/odom', '/odom'),
+            ('/map', '/map'),
+            ('/map_metadata', '/map_metadata')
         ]
     )
     
-    # Lifecycle管理器（用于启动slam_toolbox）
-    lifecycle_manager = Node(
-        package='nav2_lifecycle_manager',
-        executable='lifecycle_manager',
-        name='lifecycle_manager_slam',
-        output='screen',
-        parameters=[
-            {'use_sim_time': use_sim_time},
-            {'autostart': True},
-            {'node_names': ['slam_toolbox']}
-        ]
-    )
+    # 注意：sync_slam_toolbox_node 不需要 lifecycle_manager
+    # 如果使用 async_slam_toolbox_node，则需要 lifecycle_manager
+    # lifecycle_manager 已注释，因为 sync_slam_toolbox_node 会自动启动
     
     return LaunchDescription([
         use_sim_time_arg,
@@ -88,6 +86,6 @@ def generate_launch_description():
         slam_params_file_arg,
         # nav2_bringup,  # 暂时注释掉，因为需要map参数，SLAM模式下可以先不启动Nav2
         slam_toolbox,
-        lifecycle_manager,
+        # lifecycle_manager,  # sync_slam_toolbox_node 不需要 lifecycle_manager
     ])
 

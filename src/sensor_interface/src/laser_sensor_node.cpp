@@ -48,7 +48,7 @@ public:
     // 注意：实际使用时，SimLaserInterface和RealLaserInterface需要分别实现
     // 这里简化处理，通过工厂模式或动态加载实现
     // 暂时通过参数控制是否直接转发/scan话题（仿真）或连接硬件（实机）
-    RCLCPP_INFO(this->get_logger(), "接口类型: %s", interface_type.c_str());
+    RCLCPP_INFO(this->get_logger(), "接口类型: %s, 发布频率: %.1f Hz", interface_type.c_str(), publish_rate);
     
     // 对于仿真模式，可以直接订阅/scan话题并转发
     // 对于实机模式，需要实现硬件接口
