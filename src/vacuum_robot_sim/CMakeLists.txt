@@ -38,6 +38,12 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+# 安装Python脚本到lib目录（作为可执行文件）
+install(
+  PROGRAMS scripts/nav2_controller.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 # 暂时禁用测试以简化编译
 # if(BUILD_TESTING)
 #   find_package(ament_lint_auto REQUIRED)

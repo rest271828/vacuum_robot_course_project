@@ -35,5 +35,9 @@ if [ -f install/setup.bash ]; then
 fi
 
 echo "ROS2环境已设置完成！"
-echo "现在可以运行: ros2 launch vacuum_robot_sim complete_simulation.launch.py"
+echo ""
+echo "可用命令："
+echo "  启动完整仿真: ros2 launch vacuum_robot_sim complete_simulation.launch.py"
+echo "  启动Nav2控制: ros2 launch vacuum_robot_sim nav2_controller.launch.py"
+echo "  或直接运行:   ros2 run vacuum_robot_sim nav2_controller.py"
 
