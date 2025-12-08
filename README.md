@@ -135,6 +135,12 @@ ros2 launch vacuum_robot_sim spawn_robot.launch.py
 ros2 launch vacuum_robot_sim navigation.launch.py
 ```
 
+#### 启动Nav2控制节点
+**重要：nav2_control 需要使用 `ros2 run` 启动，而不是 `ros2 launch`：**
+```bash
+ros2 run vacuum_robot_sim new_nav2_controller.py
+```
+
 #### 启动RViz2可视化
 ```bash
 ros2 launch vacuum_robot_sim rviz.launch.py

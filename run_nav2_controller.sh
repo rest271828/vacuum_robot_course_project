@@ -13,3 +13,5 @@ source ~/vacuum_robot/install/setup.bash 2>/dev/null
 # 直接运行Python脚本
 python3 ~/vacuum_robot/install/vacuum_robot_sim/lib/vacuum_robot_sim/nav2_controller.py "$@"
 
+
+

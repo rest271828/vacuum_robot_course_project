@@ -1,133 +1,93 @@
 """
-Nav2 导航栈启动文件
-
-该文件启动完整的 Nav2 导航系统，包括：
-- SLAM Toolbox：同步 SLAM 节点，负责实时建图和定位
-- Nav2 导航栈：路径规划、路径跟踪、恢复行为等导航功能
-
-在 SLAM 模式下，地图从话题动态订阅，而不是从静态文件加载。
-
-@file navigation.launch.py
-@brief Nav2 导航栈启动文件
-@author vacuum_robot_sim
+Nav2 导航启动文件 (支持 SLAM 或 静态地图加载)
 """
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-import os
+from launch.conditions import IfCondition, UnlessCondition
 
 def generate_launch_description():
-    """
-    生成 Nav2 导航栈启动描述
-    
-    配置并启动 SLAM Toolbox 和 Nav2 导航系统。
-    在 SLAM 模式下，使用同步 SLAM 节点进行实时建图，
-    同时启动 Nav2 导航栈进行路径规划和跟踪。
-    
-    @returns {LaunchDescription} 包含导航系统配置的 LaunchDescription 对象
-    """
-    
     # ========== 声明 Launch 参数 ==========
-    
-    # 仿真时间参数
-    # @param {string} use_sim_time - 'true' 使用仿真时间，'false' 使用系统时间
-    use_sim_time_arg = DeclareLaunchArgument(
-        'use_sim_time',
-        default_value='true',
-        description='是否使用仿真时间'
-    )
-    
-    # Nav2 参数文件路径
-    # @param {string} params_file - Nav2 导航栈的 YAML 配置文件路径
-    # 包含路径规划器、控制器、恢复行为等所有 Nav2 组件的参数
-    params_file_arg = DeclareLaunchArgument(
-        'params_file',
-        default_value=PathJoinSubstitution([
-            FindPackageShare('vacuum_robot_sim'),
-            'config',
-            'nav2_params.yaml'
-        ]),
-        description='Nav2参数文件路径'
-    )
-    
-    # SLAM Toolbox 参数文件路径
-    # @param {string} slam_params_file - SLAM Toolbox 的 YAML 配置文件路径
-    # 包含建图算法、扫描匹配、回环检测等 SLAM 相关参数
-    slam_params_file_arg = DeclareLaunchArgument(
-        'slam_params_file',
-        default_value=PathJoinSubstitution([
-            FindPackageShare('vacuum_robot_sim'),
-            'config',
-            'slam_toolbox.yaml'
-        ]),
-        description='Slam Toolbox参数文件路径'
-    )
-    
-    # ========== 获取 Launch 配置参数 ==========
     use_sim_time = LaunchConfiguration('use_sim_time')
     params_file = LaunchConfiguration('params_file')
     slam_params_file = LaunchConfiguration('slam_params_file')
+    map_file = LaunchConfiguration('map') # 新增地图参数
+
+    use_sim_time_arg = DeclareLaunchArgument(
+        'use_sim_time', default_value='true', description='是否使用仿真时间')
+
+    params_file_arg = DeclareLaunchArgument(
+        'params_file',
+        default_value=PathJoinSubstitution([
+            FindPackageShare('vacuum_robot_sim'), 'config', 'nav2_params.yaml']),
+        description='Nav2参数文件路径')
+
+    slam_params_file_arg = DeclareLaunchArgument(
+        'slam_params_file',
+        default_value=PathJoinSubstitution([
+            FindPackageShare('vacuum_robot_sim'), 'config', 'slam_toolbox.yaml']),
+        description='Slam Toolbox参数文件路径')
     
-    # ========== 1. SLAM Toolbox 节点 ==========
-    # 同步 SLAM 节点，负责实时建图和定位
-    # 
-    # 功能：
-    # - 订阅激光扫描数据（/scan）和里程计数据（/odom）
-    # - 执行同步 SLAM 算法，构建地图并估计机器人位姿
-    # - 发布地图到 /map 话题
-    # - 发布 map->odom 的坐标变换（通过 tf2）
-    #
-    # 注意：在 SLAM 模式下，map->odom 变换由 SLAM 节点提供，
-    # 而不是由 AMCL（自适应蒙特卡洛定位）提供
+    # 新增 map 参数，默认为空（空表示运行 SLAM）
+    map_arg = DeclareLaunchArgument(
+        'map',
+        default_value='',
+        description='静态地图(.yaml)的完整路径。如果为空，则运行SLAM。')
+
+    # ========== 1. 模式 A: SLAM Toolbox (当 map 为空时运行) ==========
     slam_toolbox = Node(
         package='slam_toolbox',
         executable='sync_slam_toolbox_node',
         name='slam_toolbox',
         output='screen',
-        parameters=[
-            slam_params_file,
-            {'use_sim_time': use_sim_time}
-        ]
+        parameters=[slam_params_file, {'use_sim_time': use_sim_time}],
+        # 只有当 map 参数为空字符串时，才启动这个节点
+        condition=IfCondition(PythonExpression(["'", map_file, "' == ''"]))
     )
-    
-    # ========== 2. Nav2 导航栈 ==========
-    # 启动 Nav2 导航系统，负责路径规划和控制
-    # 
-    # 注意：
-    # - 使用 navigation_launch.py 而不是 bringup_launch.py
-    # - bringup_launch.py 通常包含 AMCL（定位），但我们已经用 SLAM 定位了
-    # - 因此只需要导航部分：路径规划、路径跟踪、恢复行为等
-    #
-    # 参数说明：
-    # - 'map': 空字符串表示 SLAM 模式，从 /map 话题订阅地图，不加载静态地图文件
-    # - 'autostart': 'true' 自动激活所有生命周期节点
-    # - 'use_composition': 'False' 简单模式，不使用组件容器，每个节点独立运行
+
+    # ========== 2. 模式 B: Localization (当 map 不为空时运行) ==========
+    # 启动 map_server 和 amcl
+    localization_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(PathJoinSubstitution([
+            FindPackageShare('nav2_bringup'), 'launch', 'localization_launch.py'
+        ])),
+        launch_arguments={
+            'use_sim_time': use_sim_time,
+            'map': map_file,
+            'params_file': params_file,
+            'use_lifecycle_mgr': 'false', # 由 navigation_launch 统一管理生命周期
+            'use_composition': 'False',
+        }.items(),
+        # 只有当 map 参数不为空时，才启动定位
+        condition=IfCondition(PythonExpression(["'", map_file, "' != ''"]))
+    )
+
+    # ========== 3. Nav2 导航栈 (总是运行) ==========
+    # 注意：如果运行 AMCL，Nav2 应该加载 map；如果运行 SLAM，Nav2 不需要加载 map (map='')
     nav2_navigation_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            PathJoinSubstitution([
-                FindPackageShare('nav2_bringup'),
-                'launch',
-                'navigation_launch.py'
-            ])
-        ),
+        PythonLaunchDescriptionSource(PathJoinSubstitution([
+            FindPackageShare('nav2_bringup'), 'launch', 'navigation_launch.py'
+        ])),
         launch_arguments={
             'use_sim_time': use_sim_time,
             'params_file': params_file,
-            'autostart': 'true',  # 自动激活生命周期节点
-            'use_composition': 'False',  # 简单模式，不使用组件容器
-            'map': '',  # SLAM模式：空字符串表示从话题订阅地图，不加载静态地图文件
+            'autostart': 'true',
+            'use_composition': 'False',
+            # 如果是 Localization 模式，navigation_launch 不需要再处理 map，因为 localization_launch 处理了
+            # 如果是 SLAM 模式，map 也是空的
+            'map': '', 
         }.items()
     )
 
-    # ========== 返回 Launch 描述 ==========
-    # 将所有参数声明和节点配置组合成完整的 LaunchDescription
     return LaunchDescription([
         use_sim_time_arg,
         params_file_arg,
         slam_params_file_arg,
+        map_arg,
         slam_toolbox,
-        nav2_navigation_launch,  # 必须包含 Nav2 导航栈启动配置
+        localization_launch,
+        nav2_navigation_launch,
     ])

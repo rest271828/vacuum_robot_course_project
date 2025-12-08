@@ -68,3 +68,7 @@ Thumbs.db
 # 编译产物（保留源代码）
 *.class
 
+# Markdown文件（除了README.md）
+*.md
+!README.md
+

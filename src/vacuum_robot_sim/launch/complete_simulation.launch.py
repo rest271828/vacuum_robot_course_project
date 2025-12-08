@@ -79,12 +79,20 @@ def generate_launch_description():
         description='传感器接口类型: sim 或 real'
     )
     
+    # 地图参数：指定静态地图路径。留空则运行SLAM。
+    map_arg = DeclareLaunchArgument(
+        'map',
+        default_value='/home/rest1/vacuum_robot/src/vacuum_robot_sim/map/vacuum_robot.yaml',
+        description='静态地图路径。留空则运行SLAM。'
+    )
+
     # ========== 获取 Launch 配置参数 ==========
     use_sim_time = LaunchConfiguration('use_sim_time')
     world = LaunchConfiguration('world')
     gui = LaunchConfiguration('gui')
     rviz = LaunchConfiguration('rviz')
     interface_type = LaunchConfiguration('interface_type')
+    map_file = LaunchConfiguration('map')
     
     # ========== 查找 ROS 2 包路径 ==========
     vacuum_robot_sim_dir = FindPackageShare('vacuum_robot_sim')
@@ -141,16 +149,17 @@ def generate_launch_description():
     # 启动 SLAM Toolbox 和 Nav2 导航系统
     # 包括：建图、定位、路径规划、路径跟踪等功能
     # @see navigation.launch.py
+
     navigation_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             vacuum_robot_sim_dir,
             '/launch/navigation.launch.py'
         ]),
         launch_arguments={
-            'use_sim_time': use_sim_time
+            'use_sim_time': use_sim_time,
+            'map': map_file  # <--- 加上这一行
         }.items()
     )
-    
     # ========== 启动 RViz2 可视化工具（可选） ==========
     # 根据 rviz 参数决定是否启动 RViz2
     # RViz2 用于可视化机器人状态、传感器数据、地图、路径等
@@ -173,6 +182,7 @@ def generate_launch_description():
         world_arg,
         gui_arg,
         rviz_arg,
+        map_arg,
         interface_type_arg,
         gazebo_launch,
         robot_description_launch,

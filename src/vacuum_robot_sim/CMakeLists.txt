@@ -40,7 +40,7 @@ install(
 
 # 安装Python脚本到lib目录（作为可执行文件）
 install(
-  PROGRAMS scripts/nav2_controller.py
+  PROGRAMS scripts/new_nav2_controller.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

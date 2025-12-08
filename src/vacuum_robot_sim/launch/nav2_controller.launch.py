@@ -69,7 +69,7 @@ def generate_launch_description():
     global_frame = LaunchConfiguration('global_frame')
     
     # ========== 启动 Nav2 控制节点 ==========
-    # 启动自定义的 Nav2 控制节点，该节点位于 scripts/nav2_controller.py
+    # 启动自定义的 Nav2 控制节点，该节点位于 scripts/new_nav2_controller.py
     # 
     # 节点功能：
     # - 订阅里程计话题获取机器人当前位置
@@ -78,7 +78,7 @@ def generate_launch_description():
     # - 提供坐标转换功能
     nav2_controller_node = Node(
         package='vacuum_robot_sim',
-        executable='nav2_controller.py',
+        executable='new_nav2_controller.py',
         name='nav2_controller',
         output='screen',
         parameters=[{
