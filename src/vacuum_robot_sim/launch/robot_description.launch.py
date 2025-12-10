@@ -47,7 +47,7 @@ def generate_launch_description():
     robot_description_path = PathJoinSubstitution([
         FindPackageShare('vacuum_robot_sim'),
         'urdf',
-        'robot_gazebo.xacro'
+        'robot_gazebo_sim.xacro'
     ])
     
     # ========== 机器人状态发布器节点 ==========

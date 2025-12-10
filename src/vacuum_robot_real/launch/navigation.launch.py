@@ -1,5 +1,5 @@
 """
-Nav2 导航启动文件 (支持 SLAM 或 静态地图加载)
+Nav2 导航启动文件 (支持 SLAM 或 静态地图加载) - 真机版本
 """
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
@@ -17,24 +17,24 @@ def generate_launch_description():
     map_file = LaunchConfiguration('map') # 新增地图参数
 
     use_sim_time_arg = DeclareLaunchArgument(
-        'use_sim_time', default_value='true', description='是否使用仿真时间')
+        'use_sim_time', default_value='false', description='是否使用仿真时间')
 
     params_file_arg = DeclareLaunchArgument(
         'params_file',
         default_value=PathJoinSubstitution([
-            FindPackageShare('vacuum_robot_sim'), 'config', 'nav2_params_real.yaml']),  #可以选择nav2_params_sim.yaml或者nav2_params_real.yaml
+            FindPackageShare('vacuum_robot_real'), 'config', 'nav2_params_real.yaml']),
         description='Nav2参数文件路径')
 
     slam_params_file_arg = DeclareLaunchArgument(
         'slam_params_file',
         default_value=PathJoinSubstitution([
-            FindPackageShare('vacuum_robot_sim'), 'config', 'slam_toolbox.yaml']),
+            FindPackageShare('vacuum_robot_real'), 'config', 'slam_toolbox.yaml']),
         description='Slam Toolbox参数文件路径')
     
     # 新增 map 参数，默认为空（空表示运行 SLAM）
     map_arg = DeclareLaunchArgument(
         'map',
-        default_value='',
+        default_value='/home/rest1/vacuum_robot/src/vacuum_robot_real/map/vacuum_robot.yaml',
         description='静态地图(.yaml)的完整路径。如果为空，则运行SLAM。')
 
     # ========== 1. 模式 A: SLAM Toolbox (当 map 为空时运行) ==========
@@ -91,3 +91,4 @@ def generate_launch_description():
         localization_launch,
         nav2_navigation_launch,
     ])
+
