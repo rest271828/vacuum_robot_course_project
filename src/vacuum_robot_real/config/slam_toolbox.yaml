@@ -7,9 +7,15 @@ slam_toolbox:
     scan_topic: /scan
     use_map_saver: true
     mode: mapping  # mapping or localization
+    use_sim_time: False  # 真机使用实际时间
+    
+    # 关键：TF和时间同步参数，解决"timestamp earlier than transform cache"问题
+    # 增加TF buffer持续时间，允许保留更长时间的历史变换数据
+    tf_buffer_duration: 30.0  # 默认10秒，增加到30秒以容纳更多历史数据
+    transform_publish_period: 0.02  # TF发布周期（50Hz）
     
     # 扫描匹配参数
-    scan_queue_size: 10
+    scan_queue_size: 20  # 增加队列大小，从10增加到20
     max_laser_range: 20.0
     min_laser_range: 0.1  # 设置最小激光范围，匹配Lidar能力
     minimum_travel_distance: 0.5

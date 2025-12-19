@@ -29,6 +29,7 @@ def generate_launch_description():
     ])
 
     # robot_state_publisher：发布 TF + /robot_description
+    # 增加发布频率以确保TF及时更新，避免时间戳同步问题
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -36,7 +37,8 @@ def generate_launch_description():
         output='screen',
         parameters=[{
             'use_sim_time': use_sim_time,
-            'robot_description': robot_description
+            'robot_description': robot_description,
+            'publish_frequency': 50.0  # 默认30Hz，提高到50Hz以确保TF及时更新
         }]
     )
 

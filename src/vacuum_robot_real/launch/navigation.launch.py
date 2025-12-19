@@ -34,7 +34,8 @@ def generate_launch_description():
     # 新增 map 参数，默认为空（空表示运行 SLAM）
     map_arg = DeclareLaunchArgument(
         'map',
-        default_value='/home/rest1/vacuum_robot/src/vacuum_robot_real/map/vacuum_robot.yaml',
+        #default_value='/home/rest1/vacuum_robot/src/vacuum_robot_real/map/vacuum_robot.yaml',
+        #default_value='',
         description='静态地图(.yaml)的完整路径。如果为空，则运行SLAM。')
 
     # ========== 1. 模式 A: SLAM Toolbox (当 map 为空时运行) ==========
@@ -58,10 +59,23 @@ def generate_launch_description():
             'use_sim_time': use_sim_time,
             'map': map_file,
             'params_file': params_file,
-            'use_lifecycle_mgr': 'false', # 由 navigation_launch 统一管理生命周期
+            'use_lifecycle_mgr': 'false', # 由下面的生命周期管理器统一管理
             'use_composition': 'False',
         }.items(),
         # 只有当 map 参数不为空时，才启动定位
+        condition=IfCondition(PythonExpression(["'", map_file, "' != ''"]))
+    )
+
+    # ========== AMCL 生命周期管理器 (仅在导航模式下启动) ==========
+    # 关键：需要显式启动生命周期管理器来激活 AMCL 节点
+    lifecycle_manager_localization = Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='lifecycle_manager_localization',
+        output='screen',
+        parameters=[params_file,
+                    {'autostart': True,
+                     'node_names': ['amcl']}],
         condition=IfCondition(PythonExpression(["'", map_file, "' != ''"]))
     )
 
@@ -89,6 +103,7 @@ def generate_launch_description():
         map_arg,
         slam_toolbox,
         localization_launch,
+        lifecycle_manager_localization,  # 添加 AMCL 生命周期管理器
         nav2_navigation_launch,
     ])
 
