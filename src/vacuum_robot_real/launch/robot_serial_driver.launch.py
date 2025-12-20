@@ -28,6 +28,12 @@ def generate_launch_description():
         default_value='0.20',
         description='轮距（米）'
     )
+    
+    use_sim_time_arg = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='false',
+        description='是否使用仿真时间'
+    )
 
     # 串口驱动节点
     robot_serial_driver_node = Node(
@@ -38,6 +44,7 @@ def generate_launch_description():
             'port': LaunchConfiguration('port'),
             'baudrate': LaunchConfiguration('baudrate'),
             'wheel_base': LaunchConfiguration('wheel_base'),
+            'use_sim_time': LaunchConfiguration('use_sim_time'),
         }],
         output='screen'
     )
@@ -46,6 +53,7 @@ def generate_launch_description():
         port_arg,
         baudrate_arg,
         wheel_base_arg,
+        use_sim_time_arg,
         robot_serial_driver_node,
     ])
 

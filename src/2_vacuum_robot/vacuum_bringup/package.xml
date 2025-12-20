@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>vacuum_bringup</name>
+  <version>0.0.1</version>
+  <description>Bringup package for vacuum robot (Nav2 + SLAM + RViz launch/config).</description>
+
+  <maintainer email="rest1@todo.todo">rest1</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- Build system -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Runtime dependencies used by navigate.launch.py -->
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
+  <!-- Nodes / launch files you include or run -->
+  <exec_depend>nav2_bringup</exec_depend>
+  <exec_depend>slam_toolbox</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+
+  <!-- Messages/types referenced by Nav2 stack -->
+  <exec_depend>nav2_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+
+  <!-- Useful for parameters -->
+  <exec_depend>yaml_cpp_vendor</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

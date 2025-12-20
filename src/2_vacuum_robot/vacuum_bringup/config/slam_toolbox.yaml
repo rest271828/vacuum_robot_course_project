@@ -1,0 +1,44 @@
+slam_toolbox:
+  ros__parameters:
+    use_sim_time: false
+
+    # Frames
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_link
+
+    # Laser
+    scan_topic: /scan
+
+    # Mode: online mapping
+    mode: mapping
+
+    # Publish
+    publish_tf: true
+    transform_publish_period: 0.05  # 20Hz map->odom
+
+    # Performance / filtering
+    throttle_scans: 1
+    minimum_time_interval: 0.0
+    max_laser_range: 12.0
+    minimum_travel_distance: 0.08
+    minimum_travel_heading: 0.12
+
+    # Map resolution
+    resolution: 0.05
+
+    # Loop closure (keep defaults-ish, stable)
+    do_loop_closing: true
+    loop_search_maximum_distance: 3.0
+
+    # Scan matching
+    use_scan_matching: true
+    use_scan_barycenter: true
+
+    # Solver
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None

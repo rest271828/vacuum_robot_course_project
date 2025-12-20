@@ -1,7 +1,10 @@
 slam_toolbox:
   ros__parameters:
     # 基本设置
-    odom_frame: odom
+    # 注意：如果使用纯雷达建图（无 odom），将 odom_frame 设置为 base_link
+    # 但 Nav2 的其他组件（如 local_costmap）需要 odom frame，所以保持 odom
+    # 如果确实需要纯雷达模式，需要同时修改 nav2_params_real.yaml 中的 global_frame 配置
+    odom_frame: odom  # 改回 odom，因为 Nav2 的 local_costmap 需要 odom frame
     map_frame: map
     base_frame: base_link
     scan_topic: /scan
@@ -9,17 +12,20 @@ slam_toolbox:
     mode: mapping  # mapping or localization
     use_sim_time: False  # 真机使用实际时间
     
+    #改动：将建图的数据便成立只用纯雷达方式
     # 关键：TF和时间同步参数，解决"timestamp earlier than transform cache"问题
     # 增加TF buffer持续时间，允许保留更长时间的历史变换数据
     tf_buffer_duration: 30.0  # 默认10秒，增加到30秒以容纳更多历史数据
-    transform_publish_period: 0.02  # TF发布周期（50Hz）
+    # 降低TF发布频率，减少消息队列压力（从50Hz降到20Hz）
+    transform_publish_period: 0.05  # TF发布周期（20Hz，降低以减少队列溢出）
     
-    # 扫描匹配参数
+    # 扫描匹配参数（仅使用雷达时的关键参数）
     scan_queue_size: 20  # 增加队列大小，从10增加到20
     max_laser_range: 20.0
     min_laser_range: 0.1  # 设置最小激光范围，匹配Lidar能力
-    minimum_travel_distance: 0.5
-    minimum_travel_heading: 0.5
+    # 降低阈值，使扫描匹配更频繁触发（因为没有 odom 提供初始估计）
+    minimum_travel_distance: 0.2  # 从 0.5 降低到 0.2，提高扫描匹配频率
+    minimum_travel_heading: 0.2   # 从 0.5 降低到 0.2，提高扫描匹配频率
     scan_buffer_maximum_scan_distance: 10.0
     link_match_minimum_response_fine: 0.1
     link_scan_maximum_distance: 1.5

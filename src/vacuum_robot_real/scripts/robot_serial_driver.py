@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, TransformStamped
 from nav_msgs.msg import Odometry
+from tf2_ros import TransformBroadcaster
 import serial
 import struct
 import math
@@ -47,6 +48,9 @@ class WheelSerialBridge(Node):
 
         # 发布 odom
         self.odom_pub = self.create_publisher(Odometry, '/odom', 10)
+        
+        # TF 广播器（用于发布 odom -> base_link 变换）
+        self.tf_broadcaster = TransformBroadcaster(self)
 
         # 保存最近一次 cmd_vel
         self.last_cmd_vel = Twist()
@@ -353,6 +357,45 @@ class WheelSerialBridge(Node):
         # 其他元素保持默认值 0
 
         self.odom_pub.publish(odom_msg)
+
+        # 发布 TF 变换 (odom -> base_link)
+        tfs = TransformStamped()
+        tfs.header.stamp = now
+        tfs.header.frame_id = 'odom'
+        tfs.child_frame_id = 'base_link'
+        tfs.transform.translation.x = float(x)
+        tfs.transform.translation.y = float(y)
+        tfs.transform.translation.z = 0.0
+        tfs.transform.rotation.x = 0.0
+        tfs.transform.rotation.y = 0.0
+        tfs.transform.rotation.z = qz
+        tfs.transform.rotation.w = qw
+        
+        # #region agent log
+        import json
+        try:
+            with open('/home/rest1/vacuum_robot/.cursor/debug.log', 'a') as f:
+                f.write(json.dumps({
+                    "sessionId": "debug-session",
+                    "runId": "run1",
+                    "hypothesisId": "A",
+                    "location": "robot_serial_driver.py:374",
+                    "message": "Publishing TF odom->base_link",
+                    "data": {
+                        "timestamp_sec": now.sec,
+                        "timestamp_nanosec": now.nanosec,
+                        "x": float(x),
+                        "y": float(y),
+                        "yaw": yaw,
+                        "frame_id": "odom",
+                        "child_frame_id": "base_link"
+                    },
+                    "timestamp": now.sec * 1000000000 + now.nanosec
+                }) + '\n')
+        except: pass
+        # #endregion
+        
+        self.tf_broadcaster.sendTransform(tfs)
 
         # 可选：调试打印
         # self.get_logger().info(

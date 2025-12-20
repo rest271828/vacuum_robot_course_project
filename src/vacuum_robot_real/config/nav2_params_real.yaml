@@ -4,6 +4,8 @@ bt_navigator:
     global_frame: map
     robot_base_frame: base_link
     odom_topic: /odom
+    # 增加transform_tolerance以容忍时间戳差异
+    transform_tolerance: 5.0
     bt_loop_duration: 10
     default_server_timeout: 20
     enable_groot_monitoring: True
@@ -89,8 +91,8 @@ controller_server:
       sim_time: 1.7
       linear_granularity: 0.05
       angular_granularity: 0.025
-      # 增加transform_tolerance以解决时间戳同步问题
-      transform_tolerance: 1.5
+      # 增加transform_tolerance以解决时间戳同步问题（解决"timestamp earlier than transform cache"）
+      transform_tolerance: 5.0  # 从 1.5 增加到 5.0，容忍更大的时间戳延迟
       xy_goal_tolerance: 0.25
       trans_stopped_velocity: 0.25
       short_circuit_trajectory_evaluation: True
@@ -127,8 +129,8 @@ local_costmap:
       height: 3
       resolution: 0.05
       robot_radius: 0.22
-      # 添加transform_tolerance以容忍时间戳差异
-      transform_tolerance: 1.5
+      # 添加transform_tolerance以容忍时间戳差异（解决"timestamp earlier than transform cache"问题）
+      transform_tolerance: 5.0  # 从 1.5 增加到 5.0，容忍更大的时间戳延迟
       plugins: ["voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
@@ -154,8 +156,8 @@ local_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 2.5
           obstacle_min_range: 0.0
-          # 关键：添加transform_tolerance解决laser_link时间戳问题
-          transform_tolerance: 1.5
+          # 关键：添加transform_tolerance解决laser_link时间戳问题（解决"timestamp earlier than transform cache"）
+          transform_tolerance: 5.0  # 从 1.5 增加到 5.0，容忍更大的时间戳延迟
           expected_update_rate: 0.0
           observation_persist: 0.0
       static_layer:
@@ -174,8 +176,8 @@ global_costmap:
       robot_radius: 0.22
       resolution: 0.05
       track_unknown_space: true
-      # 添加transform_tolerance以容忍时间戳差异
-      transform_tolerance: 1.5
+      # 增加transform_tolerance以容忍时间戳差异（解决路径规划失败问题）
+      transform_tolerance: 5.0  # 从 1.5 增加到 5.0，容忍更大的时间戳延迟
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
@@ -191,8 +193,8 @@ global_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 2.5
           obstacle_min_range: 0.0
-          # 关键：添加transform_tolerance解决laser_link时间戳问题
-          transform_tolerance: 1.5
+          # 关键：添加transform_tolerance解决laser_link时间戳问题（解决"timestamp earlier than transform cache"）
+          transform_tolerance: 5.0  # 从 1.5 增加到 5.0，容忍更大的时间戳延迟
           expected_update_rate: 0.0
           observation_persist: 0.0
       static_layer:
@@ -211,19 +213,25 @@ amcl:
     odom_frame_id: "odom"
     global_frame_id: "map"
     scan_topic: "scan"
-    # 增加transform_tolerance以容忍时间戳差异
-    transform_tolerance: 2.0
+    # 增加transform_tolerance以容忍时间戳差异（解决消息队列溢出问题）
+    transform_tolerance: 5.0  # 从 2.0 增加到 5.0，容忍更大的时间戳延迟
+    # 消息过滤器队列大小（如果 AMCL 支持此参数）
+    # 注意：某些版本的 AMCL 可能不支持此参数，需要通过环境变量设置
     
-    # 初始位姿配置（如果没有设置初始位姿，AMCL 会使用默认值）
-    # 这些参数确保 AMCL 可以在没有初始位姿的情况下启动（虽然定位会不准确）
-    set_initial_pose: false  # 如果设置为 true，需要使用 initial_pose_x/y/yaw 参数
-    # initial_pose_x: 0.0
-    # initial_pose_y: 0.0
-    # initial_pose_z: 0.0
-    # initial_pose_a: 0.0
-    # initial_cov_xx: 0.5
-    # initial_cov_yy: 0.5
-    # initial_cov_aa: 0.5
+    # 初始位姿配置 - 自动设置初始位姿，无需在 RViz2 中手动设置
+    # 设置为 true 后，AMCL 启动时会自动使用下面配置的初始位姿
+    set_initial_pose: true
+    # 初始位姿（在地图坐标系中的位置和朝向）
+    # 根据你的地图和机器人实际位置修改这些值
+    initial_pose_x: 0.0      # X 坐标（米）
+    initial_pose_y: 0.0      # Y 坐标（米）
+    initial_pose_z: 0.0      # Z 坐标（米，通常为 0）
+    initial_pose_a: 0.0      # 朝向角度（弧度），0 表示朝向 X 轴正方向
+    # 初始位姿的不确定性（协方差），值越大表示不确定性越大
+    # 如果初始位姿不准确，可以增大这些值
+    initial_cov_xx: 0.5      # X 方向的不确定性
+    initial_cov_yy: 0.5      # Y 方向的不确定性
+    initial_cov_aa: 0.5      # 角度方向的不确定性
 
     # 以下是比较通用的一组 AMCL 参数，可以按需再调
     alpha1: 0.2
@@ -319,7 +327,7 @@ lifecycle_manager_navigation:
     use_sim_time: False
     autostart: True
     node_names:
-      - map_server
+      # - map_server
       - planner_server
       - controller_server
       - recoveries_server

@@ -34,7 +34,7 @@ def generate_launch_description():
     # 新增 map 参数，默认为空（空表示运行 SLAM）
     map_arg = DeclareLaunchArgument(
         'map',
-        #default_value='/home/rest1/vacuum_robot/src/vacuum_robot_real/map/vacuum_robot.yaml',
+        default_value='/home/rest1/vacuum_robot/src/vacuum_robot_real/map/vacuum_robot.yaml',
         #default_value='',
         description='静态地图(.yaml)的完整路径。如果为空，则运行SLAM。')
 
@@ -65,9 +65,33 @@ def generate_launch_description():
         # 只有当 map 参数不为空时，才启动定位
         condition=IfCondition(PythonExpression(["'", map_file, "' != ''"]))
     )
+    
+    # #region agent log - 记录地图文件路径和启动条件
+    import os
+    import json
+    try:
+        os.makedirs('/home/rest1/vacuum_robot/.cursor', exist_ok=True)
+        map_file_str = str(map_file) if hasattr(map_file, '__str__') else str(map_file.perform(None))
+        with open('/home/rest1/vacuum_robot/.cursor/debug.log', 'a') as f:
+            f.write(json.dumps({
+                "sessionId": "debug-session",
+                "runId": "run1",
+                "hypothesisId": "A",
+                "location": "navigation.launch.py:67",
+                "message": "Localization launch condition check",
+                "data": {
+                    "map_file": map_file_str,
+                    "map_file_empty": map_file_str == "",
+                    "localization_will_start": map_file_str != ""
+                },
+                "timestamp": int(__import__('time').time() * 1000000000)
+            }) + '\n')
+    except Exception as e:
+        pass
+    # #endregion
 
-    # ========== AMCL 生命周期管理器 (仅在导航模式下启动) ==========
-    # 关键：需要显式启动生命周期管理器来激活 AMCL 节点
+    # ========== Map Server 和 AMCL 生命周期管理器 (仅在导航模式下启动) ==========
+    # 关键：需要显式启动生命周期管理器来激活 map_server 和 AMCL 节点
     lifecycle_manager_localization = Node(
         package='nav2_lifecycle_manager',
         executable='lifecycle_manager',
@@ -75,7 +99,7 @@ def generate_launch_description():
         output='screen',
         parameters=[params_file,
                     {'autostart': True,
-                     'node_names': ['amcl']}],
+                     'node_names': ['map_server', 'amcl']}],  # 添加 map_server 到生命周期管理
         condition=IfCondition(PythonExpression(["'", map_file, "' != ''"]))
     )
 
