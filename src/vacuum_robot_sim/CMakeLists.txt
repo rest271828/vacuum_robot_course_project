@@ -42,6 +42,7 @@ install(
 install(
   PROGRAMS scripts/new_nav2_controller.py
             scripts/coverage_controller_test01.py
+            scripts/coverage_controller_test02.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
