@@ -22,7 +22,7 @@ def generate_launch_description():
     params_file_arg = DeclareLaunchArgument(
         'params_file',
         default_value=PathJoinSubstitution([
-            FindPackageShare('vacuum_robot_sim'), 'config', 'nav2_params_real.yaml']),  #可以选择nav2_params_sim.yaml或者nav2_params_real.yaml
+            FindPackageShare('vacuum_robot_sim'), 'config', 'nav2_params.yaml']),  # 使用 nav2_params.yaml (较新版本)
         description='Nav2参数文件路径')
 
     slam_params_file_arg = DeclareLaunchArgument(

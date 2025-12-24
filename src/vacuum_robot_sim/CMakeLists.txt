@@ -41,6 +41,7 @@ install(
 # 安装Python脚本到lib目录（作为可执行文件）
 install(
   PROGRAMS scripts/new_nav2_controller.py
+            scripts/coverage_controller_test01.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
